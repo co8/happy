@@ -23,7 +23,7 @@ class happy:
     """HAPpy - Helium API Parser, Python"""
 
     # attr
-    hotspot = json_file = ""
+    hotspot = json_file_input = ""
     vars = {}
     activities = {}
     output = []
@@ -55,24 +55,32 @@ class happy:
     }
 
     def load_json_data(self):
-        if bool(self.json_file):
-            # self.activities = json.loads(open(self.json_file).read())
-            with open(self.json_file) as json_data_file:
-                jload = json.load(json_data_file)
-                self.activities = jload["data"]
-                jload.pop("data")
+
+        # get json_file_input from vars if exists
+        if "json_file_input" in self.vars and bool(self.vars["json_file_input"]):
+            self.json_file_input = self.vars["json_file_input"]
+
+        # print(self.json_file_input)
+        # exit()
+
+        if bool(self.json_file_input):
+
+            with open(self.json_file_input) as json_data_file:
+                json_load = json.load(json_data_file)
+                self.activities = json_load["data"]
+                json_load.pop("data")
 
                 # if more vars after data, load in vars
-                if bool(jload):
-                    for key, var in jload.items():
+                if bool(json_load):
+                    for key, var in json_load.items():
                         self.vars[key] = var
 
-    def get_time():
-        global hs
+    def get_time(self):
+        # global hs
         # time functions
         now = datetime.now()
-        hs["now"] = round(datetime.timestamp(now))
-        hs["time"] = str(now.strftime("%H:%M %D"))
+        self.vars["now"] = round(datetime.timestamp(now))
+        self.vars["time"] = str(now.strftime("%H:%M %D"))
 
     def nice_date(self, time):
         timestamp = datetime.fromtimestamp(time)
@@ -126,16 +134,68 @@ class happy:
             else reward_type.upper()
         )
 
+    def write_json(self):
+        print(f"writing json: {self.vars['json_file_output']}")
+        with open(self.vars["json_file_output"], "w") as outfile:
+            json.dump(happy.output, outfile)
+
+    ###############################################
+    def load_activity_data(self):
+        # global activities, config, hs, wellness_check, send, send_report, send_wellness_check
+
+        # try to get json or return error
+        status = ""
+        try:
+            # LIVE API data
+            activity_endpoint = (
+                self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
+            )
+            activity_request = requests.get(activity_endpoint)
+            data = activity_request.json()
+            self.activities = data["data"]
+
+            ### DEV Only
+            ###LOCAL load data.json
+            # with open("data.json") as json_data_file:
+            #  data = json.load(json_data_file)
+
+        except requests.RequestException:
+            status = "Connectivity"
+        except ValueError:  # includes simplejson.decoder.JSONDecodeError
+            status = "Parsing JSON"
+        except (IndexError, KeyError):
+            status = "JSON format"
+
+        if bool(status):
+            print("Activity API Error: {status}")
+            quit()
+
+        # quit if no data
+        if not bool(self.activities):
+            print("Activity API: No Data")
+            quit()
+
+        # no data or send_report false
+        # elif not data["data"]:
+        #    print("API Success. No activities")
+        #    quit()
+
+        # set activities, set last.send, update config
+        else:
+            # send = True
+            self.activities = data["data"]
+
+    ###############################################
+
     def loop_activities(self):
 
         if bool(self.activities):
             for activity in self.activities:
                 parsed_activity = {}
                 # activity time
+                parsed_activity["hash"] = activity["hash"]
                 parsed_activity["time"] = activity["time"]
                 parsed_activity["time_nice"] = self.nice_date(activity["time"])
-                parsed_activity["hash"] = activity["hash"]
-                # time = nice_date(activity["time"])
 
                 # reward
                 if activity["type"] == "rewards_v2":
@@ -187,10 +247,7 @@ class happy:
                     parsed_activity["emoji"] = "🚀"
                     # output_message.append(f"🚀 {other_type.upper()}  `{time}`")
 
-            # self.output.append(parsed_activity)
-            # print("parsed_activity:")
-            # print(parsed_activity)
-            self.output.append(parsed_activity)
+                self.output.append(parsed_activity)
 
     def poc_receipts_v1(self, activity):
 
@@ -199,6 +256,7 @@ class happy:
         # valid_text = "💩  Invalid"
         valid_text = "Invalid"
         # time = nice_date(activity["time"])
+        parsed_poc["hash"] = activity["hash"]
         parsed_poc["time"] = activity["time"]
         parsed_poc["time_nice"] = self.nice_date(activity["time"])
         parsed_poc["type"] = "poc_receipts_v1"
@@ -216,7 +274,7 @@ class happy:
         if "challenger" in activity and activity["challenger"] == self.hotspot:
             # output_message.append(f"🏁 ...Challenged Beaconer, {wit_text}  `{time}`")
             parsed_poc["name"] = "...Challenged Beaconer"
-            parsed_poc["witnesses"] = witnesses
+            parsed_poc["witnesses"] = len(witnesses)
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
 
         # beacon sent
@@ -240,7 +298,7 @@ class happy:
 
             parsed_poc["name"] = "Sent Beacon"
             parsed_poc["emoji"] = "🌋"
-            parsed_poc["witnesses"] = witnesses
+            parsed_poc["witnesses"] = len(witnesses)
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
             parsed_poc["valid_witnesses"] = valid_wit_count
 
@@ -294,14 +352,24 @@ class happy:
     ##############################
     # init
     def __init__(self, hotspot, loadvars={}):
+
         if not bool(hotspot):
-            print("happy needs a hotspot address or Helium Blockchain API output")
+            print("happy needs a hotspot address to get latest activities")
             quit()
         self.hotspot = hotspot
 
         # loadvars is str and is ends with .json
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
-            self.json_file = loadvars
+            self.vars["json_file_input"] = loadvars
+            self.load_json_data()
+            print(f"json input str: {self.vars['json_file_input']}")
+        elif (
+            "json_file_input" in loadvars
+            and loadvars["json_file_input"].find(".json") != -1
+        ):
+
+            self.json_file_input = loadvars["json_file_input"]
+            print(f"vars.json_file_input: {self.json_file_input}")
             # load json, set as activities
             self.load_json_data()
 
@@ -318,13 +386,21 @@ class happy:
 
         # if loadvars dict and more than "data", load into vars
         if isinstance(loadvars, dict) and bool(loadvars):
-            if "json_file" in self.vars:
-                self.json_file = loadvars["json_file"]
+            if "json_file_input" in self.vars:
+                self.json_file_input = loadvars["json_file_input"]
             # load json, set as activities
             self.load_json_data()
 
             for key, var in loadvars.items():
                 self.vars[key] = var
 
+        # load activities if no json file as loadvars as str or as loadvars.json_file_input
+        if not bool(self.json_file_input):
+            # get live data
+            self.load_activity_data()
+
         # loop activities
         self.loop_activities()
+
+        if "json_file_output" in self.vars and bool(self.vars["json_file_output"]):
+            self.write_json()

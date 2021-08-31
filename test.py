@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import json
+
 # import happy class from hap.py
 from hap import happy
 
@@ -10,37 +12,44 @@ from hap import happy
 # __ : mangle the attribute names of a class to avoid conflicts of attribute names between classes
 ####
 
+# required
 hotspot = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD"
-json_file = "data.json"
-loadvars = {"max_activities": 25, "json_file": json_file}
 
-activities = {
-    "data": [
-        {
-            "version": 10010005,
-            "type": "poc_request_v1",
-            "time": 1630372195,
-            "secret_hash": "HYQXC2J9aOkk9ZfJ-2DplWtd5jE40pmAypGhN7kiRQk",
-            "onion_key_hash": "Th3aGi4Ob3uJsn2T1CvOpbuhI_efmbp5m2UTX5PsN98",
-            "height": 989604,
-            "hash": "FEg3PlPbwkEzYc3pVYF8Lk-lrJUB_PIf7_epTbNWpw0",
-            "fee": 0,
-            "challenger_owner": "14hriz8pmxm51FGmk1nuijHz6ng9z9McfJZgsg4yxzF2H7No3mH",
-            "challenger_location": "8c44a111d29e3ff",
-            "challenger": "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD",
-            "block_hash": "qLXkWoGnLbJ7B8UaWIz84E72R8Sf2t3MbxYFZcrdRSU",
-        }
-    ],
-    "cursor": "eyJtaW5fYmxvY2siOjg5NDEwOSwibWF4X2Jsb2NrIjo5ODk2MzgsImJsb2NrIjo5ODk2MDAsImFuY2hvcl9ibG9jayI6OTg5NjAwfQ",
+# optional
+loadvars = {}
+json_file_input = "data.json"
+data = [
+    {
+        "type": "rewards_v2",
+        "time": 1629033433,
+        "start_epoch": 966367,
+        "rewards": [
+            {
+                "type": "poc_witnesses",
+                "gateway": "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD",
+                "amount": 879080,
+                "account": "14hriz8pmxm51FGmk1nuijHz6ng9z9McfJZgsg4yxzF2H7No3mH",
+            },
+        ],
+        "height": 966399,
+        "hash": "2rsmcnn4k7uWbjCCSUu1AbMMRWlyfCp9nGCmX4jjk9A",
+        "end_epoch": 966398,
+    }
+]
+
+loadvars = {
+    # "data": data, # 'data' from helium blockchain api response
+    "json_file_input": json_file_input,  # same format as helium blockchain api response
+    "json_file_output": "output.json",  # if activities, output file to write to
+    # "use_cursor": True,  # in_dev
+    "max_activities": 25,  # in_dev limit of activities. live or from cursor. API max ±100
 }
 
-# merging data and vars in loadvars
-# loadvars = {**loadvars, **activities}
-
-
-# Driver code
 # Object instantiation
-happy = happy(hotspot, json_file)  # hotspot_str_or_activities_list_or_json_file
+# happy = happy(hotspot)
+happy = happy(hotspot, json_file_input)
+happy = happy(hotspot, loadvars)
+happy = happy(hotspot, loadvars["data"])
 
 # Accessing class attributes
 # and method through objects
@@ -51,3 +60,4 @@ print(f"activities count: {len(happy.activities)}")
 print(f"vars: {len(happy.vars)}")
 # print(happy.vars)
 print(f"output count: {len(happy.output)}")
+# print(happy.output)
