@@ -25,13 +25,12 @@ class happy:
     # attr
     hotspot = json_file_input = ""
     vars = {}
-    activities = {}
-    output = []
-    get_hotspot_data = False
+    activities = {}  # input
+    ness = []  # output
 
     # vars
     helium_api_endpoint = "https://api.helium.io/v1/"
-    hs = {}
+    # hs = {}
     activities = []
 
     # config_file = "config.json"
@@ -55,7 +54,7 @@ class happy:
     }
 
     def load_json_data(self):
-
+        # print("load_json_data()")
         # get json_file_input from vars if exists
         if "json_file_input" in self.vars and bool(self.vars["json_file_input"]):
             self.json_file_input = self.vars["json_file_input"]
@@ -74,6 +73,15 @@ class happy:
                 if bool(json_load):
                     for key, var in json_load.items():
                         self.vars[key] = var
+
+    def trim_activities(self):
+        if (
+            "max" in self.vars
+            and bool(self.vars["max"])
+            and len(self.activities) > self.vars["max"]
+        ):
+            print(f"trim_activities(): {self.vars['max']}")
+            del self.activities[self.vars["max"] :]
 
     def get_time(self):
         # global hs
@@ -137,57 +145,99 @@ class happy:
     def write_json(self):
         print(f"writing json: {self.vars['json_file_output']}")
         with open(self.vars["json_file_output"], "w") as outfile:
-            json.dump(happy.output, outfile)
+            json.dump(self.ness, outfile)
+
+    def get_cursor(self):
+
+        if (
+            "get_fresh_cursor_and_use_to_get_activities" in self.vars
+            and "cursor" in self.vars
+            and bool(self.vars["cursor"])
+        ):
+
+            try:
+                # LIVE API data
+                activity_endpoint = (
+                    self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
+                )
+                activity_request = requests.get(activity_endpoint)
+                data = activity_request.json()
+                self.vars["cursor"] = data["cursor"]
+
+            except:
+                print("cannot get cursor from Helium API. I quit")
+                quit()
 
     ###############################################
     def load_activity_data(self):
         # global activities, config, hs, wellness_check, send, send_report, send_wellness_check
 
-        # try to get json or return error
-        status = ""
-        try:
-            # LIVE API data
-            activity_endpoint = (
-                self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
-            )
-            activity_request = requests.get(activity_endpoint)
-            data = activity_request.json()
-            self.activities = data["data"]
+        # get activities from "data" in loadvars
+        if "data" in self.vars:  # and isinstance(self.vars["data"], list):
+            self.activities = self.vars["data"]
+            # load json, set as activities
+            # self.load_json_data()
+            print("data from loadvars ln 180")
 
-            ### DEV Only
-            ###LOCAL load data.json
-            # with open("data.json") as json_data_file:
-            #  data = json.load(json_data_file)
-
-        except requests.RequestException:
-            status = "Connectivity"
-        except ValueError:  # includes simplejson.decoder.JSONDecodeError
-            status = "Parsing JSON"
-        except (IndexError, KeyError):
-            status = "JSON format"
-
-        if bool(status):
-            print("Activity API Error: {status}")
-            quit()
-
-        # quit if no data
-        if not bool(self.activities):
-            print("Activity API: No Data")
-            quit()
-
-        # no data or send_report false
-        # elif not data["data"]:
-        #    print("API Success. No activities")
-        #    quit()
-
-        # set activities, set last.send, update config
         else:
+
+            add_cursor = ""
+            # if (
+            #    "cursor" not in self.vars
+            #    and "get_fresh_cursor_and_use_to_get_activities" in self.vars
+            # ):
+            self.get_cursor()
+            if "cursor" in self.vars and bool(self.vars["cursor"]):
+                add_cursor = f"?cursor={self.vars['cursor']}"
+
+            # try to get json or return error
+            status = ""
+            try:
+                # LIVE API data
+                activity_endpoint = (
+                    self.helium_api_endpoint
+                    + "hotspots/"
+                    + self.hotspot
+                    + "/activity/"
+                    + add_cursor
+                )
+                activity_request = requests.get(activity_endpoint)
+                data = activity_request.json()
+                self.activities = data["data"]
+
+            except requests.RequestException:
+                status = "Connectivity"
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                status = "Parsing JSON"
+            except (IndexError, KeyError):
+                status = "JSON format"
+
+            if bool(status):
+                print(f"Activity API Error: {status}")
+                quit()
+
+            # quit if no data
+            # if not bool(self.activities):
+            #    resp = "No Activities"
+            #    print(resp)
+            #    self.vars["response"] = resp
+            #    quit()
+
+            # no data or send_report false
+            # elif not data["data"]:
+            #    print("API Success. No activities")
+            #    quit()
+
+            # set activities, set last.send, update config
+            # else:
             # send = True
             self.activities = data["data"]
 
     ###############################################
 
     def loop_activities(self):
+
+        self.trim_activities()
 
         if bool(self.activities):
             for activity in self.activities:
@@ -247,7 +297,7 @@ class happy:
                     parsed_activity["emoji"] = "🚀"
                     # output_message.append(f"🚀 {other_type.upper()}  `{time}`")
 
-                self.output.append(parsed_activity)
+                self.ness.append(parsed_activity)
 
     def poc_receipts_v1(self, activity):
 
@@ -362,6 +412,7 @@ class happy:
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
             self.vars["json_file_input"] = loadvars
             self.load_json_data()
+            print("load_json_data() ln 398")
             print(f"json input str: {self.vars['json_file_input']}")
         elif (
             "json_file_input" in loadvars
@@ -369,9 +420,10 @@ class happy:
         ):
 
             self.json_file_input = loadvars["json_file_input"]
-            print(f"vars.json_file_input: {self.json_file_input}")
+            # print(f"vars.json_file_input: {self.json_file_input}")
             # load json, set as activities
             self.load_json_data()
+            print("load_json_data() ln 408")
 
         # loadvars is dict has "data" and bool("data")
         if (
@@ -381,15 +433,17 @@ class happy:
             and bool(loadvars["data"])
         ):
             self.activities = loadvars["data"]
-            # print(self.activities)
             loadvars.pop("data")
 
         # if loadvars dict and more than "data", load into vars
         if isinstance(loadvars, dict) and bool(loadvars):
-            if "json_file_input" in self.vars:
+
+            # get activities from json file provided in "json_file_input" in loadvars
+            if (
+                "json_file_input" in self.vars
+                and self.vars["json_file_input"].find(".json") != -1
+            ):
                 self.json_file_input = loadvars["json_file_input"]
-            # load json, set as activities
-            self.load_json_data()
 
             for key, var in loadvars.items():
                 self.vars[key] = var

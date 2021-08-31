@@ -16,9 +16,9 @@ from hap import happy
 hotspot = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD"
 
 # optional
-loadvars = {}
-json_file_input = "data.json"
-data = [
+# loadvars = {}
+# data_empty = [{}]
+data_list = [
     {
         "type": "rewards_v2",
         "time": 1629033433,
@@ -36,20 +36,30 @@ data = [
         "end_epoch": 966398,
     }
 ]
-
+json_file_input = "data.json"
 loadvars = {
-    # "data": data, # 'data' from helium blockchain api response
+    # "data": data_list,  # 'data' from helium blockchain api response
     "json_file_input": json_file_input,  # same format as helium blockchain api response
     "json_file_output": "output.json",  # if activities, output file to write to
-    # "use_cursor": True,  # in_dev
-    "max_activities": 25,  # in_dev limit of activities. live or from cursor. API max ±100
+    # "get_fresh_cursor_and_use_to_get_activities": True,
+    # "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlITHNkQm9CeC01ZzV2TVVUZzREMkxFVzBzIiwibWluX2Jsb2NrIjo4OTQxMDksIm1heF9ibG9jayI6OTY2NTg5LCJibG9jayI6OTYyNTUyLCJhbmNob3JfYmxvY2siOjk2NjUwMH0",
+    # "max": 25,  # limit number of activities. live or from cursor. API max ±100
+    "get_hotspot_data": False,  # in_dev
+    "get_wallet_balance": False,  # in_dev
 }
 
-# Object instantiation
+### Object instantiation
 # happy = happy(hotspot)
-happy = happy(hotspot, json_file_input)
-happy = happy(hotspot, loadvars)
-happy = happy(hotspot, loadvars["data"])
+# happy = happy(hotspot, loadvars)
+# happy = happy(hotspot, json_file_input)
+happy = happy(hotspot, data_list)
+
+## Objects
+# happy.hotspot
+# happy.activities  # incoming activities
+# happy.ness  # happy parsed activities
+# happy.vars  # dict of happy vars
+
 
 # Accessing class attributes
 # and method through objects
@@ -59,5 +69,7 @@ print(f"activities count: {len(happy.activities)}")
 # print(happy.activities)
 print(f"vars: {len(happy.vars)}")
 # print(happy.vars)
-print(f"output count: {len(happy.output)}")
+print(f"happy.ness count: {len(happy.ness)}")
+print(happy.ness[0]["name"])
+print(happy.ness[0]["emoji"])
 # print(happy.output)
