@@ -44,7 +44,7 @@ class happy:
     invalid_reason_short_names = {
         "witness_too_close": "Too Close",
         "witness_rssi_too_high": "RSSI Too High",
-        "witness_rssi_below_lower_bound": "RSSI BLB",
+        "witness_rssi_below_lower_bound": "RSSI Below Lower Bound",
     }
     reward_short_names = {
         "poc_witnesses": "Witness",
@@ -80,7 +80,7 @@ class happy:
             and bool(self.vars["max"])
             and len(self.activities) > self.vars["max"]
         ):
-            print(f"trim_activities(): {self.vars['max']}")
+            # print(f"trim_activities(): {self.vars['max']}")
             del self.activities[self.vars["max"] :]
 
     def get_time(self):
@@ -143,17 +143,17 @@ class happy:
         )
 
     def write_json(self):
-        print(f"writing json: {self.vars['json_file_output']}")
+        # print(f"writing json: {self.vars['json_file_output']}")
         with open(self.vars["json_file_output"], "w") as outfile:
             json.dump(self.ness, outfile)
 
     def get_cursor(self):
-
-        if (
-            "get_fresh_cursor_and_use_to_get_activities" in self.vars
-            and "cursor" in self.vars
-            and bool(self.vars["cursor"])
-        ):
+        # if (
+        #    "get_cursor" in self.vars
+        #    and "cursor" in self.vars
+        #    and bool(self.vars["cursor"])
+        # ):
+        if "get_cursor" in self.vars:
 
             try:
                 # LIVE API data
@@ -177,17 +177,19 @@ class happy:
             self.activities = self.vars["data"]
             # load json, set as activities
             # self.load_json_data()
-            print("data from loadvars ln 180")
+            # print("data from loadvars ln 180")
 
         else:
 
+            # add cursor if set, get and set cursor if get_cursor
             add_cursor = ""
-            # if (
-            #    "cursor" not in self.vars
-            #    and "get_fresh_cursor_and_use_to_get_activities" in self.vars
-            # ):
-            self.get_cursor()
-            if "cursor" in self.vars and bool(self.vars["cursor"]):
+            if "cursor" in self.vars or "get_cursor" in self.vars:
+                if "get_cursor" in self.vars and bool(self.vars["get_cursor"]):
+                    self.get_cursor()
+                    # print("cursor: NEW")
+                elif "cursor" in self.vars and bool(self.vars["cursor"]):
+                    add_cursor = f"?cursor={self.vars['cursor']}"
+                    # print("cursor: existing")
                 add_cursor = f"?cursor={self.vars['cursor']}"
 
             # try to get json or return error
@@ -243,6 +245,7 @@ class happy:
             for activity in self.activities:
                 parsed_activity = {}
                 # activity time
+                parsed_activity["height"] = activity["height"]
                 parsed_activity["hash"] = activity["hash"]
                 parsed_activity["time"] = activity["time"]
                 parsed_activity["time_nice"] = self.nice_date(activity["time"])
@@ -306,6 +309,7 @@ class happy:
         # valid_text = "💩  Invalid"
         valid_text = "Invalid"
         # time = nice_date(activity["time"])
+        parsed_poc["height"] = activity["height"]
         parsed_poc["hash"] = activity["hash"]
         parsed_poc["time"] = activity["time"]
         parsed_poc["time_nice"] = self.nice_date(activity["time"])
@@ -374,7 +378,10 @@ class happy:
                         # valid_text = "💩 Invalid"
                         valid_text = "Invalid"
                         parsed_poc["emoji"] = "💩"
-                        witness_info = ", " + self.nice_invalid_reason(
+                        # witness_info = ", " + self.nice_invalid_reason(
+                        #    w["invalid_reason"]
+                        # )
+                        parsed_poc["invalid_reason"] = self.nice_invalid_reason(
                             w["invalid_reason"]
                         )
 
@@ -412,8 +419,8 @@ class happy:
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
             self.vars["json_file_input"] = loadvars
             self.load_json_data()
-            print("load_json_data() ln 398")
-            print(f"json input str: {self.vars['json_file_input']}")
+            # print("load_json_data() ln 398")
+            # print(f"json input str: {self.vars['json_file_input']}")
         elif (
             "json_file_input" in loadvars
             and loadvars["json_file_input"].find(".json") != -1
@@ -423,7 +430,7 @@ class happy:
             # print(f"vars.json_file_input: {self.json_file_input}")
             # load json, set as activities
             self.load_json_data()
-            print("load_json_data() ln 408")
+            # print("load_json_data() ln 408")
 
         # loadvars is dict has "data" and bool("data")
         if (
