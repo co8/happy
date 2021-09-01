@@ -169,8 +169,12 @@ optional_attributes = {
 #limit of 25 activities, save to output.json
 optional_attributes = {
     "json_file_output": "output.json",
+    "get_cursor": True
     "max": 25,
 }
+
+# No Activities in Response?
+# If your response does not have activities, try setting 'get_cursor' and 'max' to use API pagination to get recent activities
 
 happy = happy(hotspot_address, optional_attributes)
 
@@ -184,8 +188,8 @@ happy = happy(hotspot_address, "activities.json")
 
 #Or pass within a dict with other attributes
 json_file_input_with_vars = {
-  "json_file_input" : "data.json",
-  "max" : 5
+  "json_file_input" : "activities.json",
+  "max" : 5 # optional
 }
 happy = happy(hotspot_address, json_file_input_with_vars)
 ```
