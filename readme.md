@@ -4,6 +4,31 @@
 
 <!-- **Listed as a Helium Community Tool** [https://explorer.helium.com/tools](https://explorer.helium.com/tools) -->
 
+```python
+# only need your hotspot address
+hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
+
+happy = happy(hotspot_address)
+
+#Response
+print(happy.ness)
+```
+
+```PYTHON
+{
+    "height": 966398,
+    "hash": "ONGyfDAfMQL8gVMPFqUEypxVIjz_l7jxTvG9D2_NkRc",
+    "time": 1629033383,
+    "time_nice": "09:16 15/AUG",
+    "type": "poc_receipts_v1",
+    "emoji": "🛸",
+    "name": "Valid Witness",
+    "witnesses": 25,
+    "witness_text": "Witnesses",
+    "valid_witnesses": 20
+},
+```
+
 #### Features
 
 - Uses [Helium Blockchain API](https://docs.helium.com/api/blockchain/introduction/)
