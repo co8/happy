@@ -4,7 +4,7 @@
 
 <!-- **Listed as a Helium Community Tool** [https://explorer.helium.com/tools](https://explorer.helium.com/tools) -->
 
-```python
+```PYTHON
 # only need your hotspot address
 hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
 
@@ -12,9 +12,7 @@ happy = happy(hotspot_address)
 
 #Response
 print(happy.ness)
-```
 
-```PYTHON
 {
     "height": 966398,
     "hash": "ONGyfDAfMQL8gVMPFqUEypxVIjz_l7jxTvG9D2_NkRc",
@@ -28,6 +26,10 @@ print(happy.ness)
     "valid_witnesses": 20
 },
 ```
+
+🛸 Valid Witness, 1 of 25, 20 Valid, 09:16 15/AUG at height 966,398
+
+---
 
 #### Features
 
