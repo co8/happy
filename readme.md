@@ -27,7 +27,7 @@ print(happy.ness)
 },
 ```
 
-🛸 Valid Witness, 1 of 25, 20 Valid, 09:16 15/AUG at height 966,398
+🛸 Valid Witness, 1 of 25, 20 Valid Witnesses, 09:16 15/AUG at height 966,398
 
 ---
 
@@ -79,7 +79,6 @@ happy = happy(hotspot_address)
 
 #response object. newest API data without pagination
 happy.ness
-
 
 print(f"activities count: {len(happy.ness)}")
 #activities count: 3
