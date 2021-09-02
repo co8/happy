@@ -326,21 +326,15 @@ class happy:
                     self.ness[ness_index]["type"] in filters
                     or self.ness[ness_index]["subtype"] in filters
                 ):
-                    # print(
-                    #    f"IN FILTER {ness_index} {self.ness[ness_index]['type']} {self.ness[ness_index]['subtype']}"
-                    # )
                     self_ness_filtered.append(self.ness[ness_index])
 
-            self.ness = self_ness_filtered
-            print(f"filtered count: {len(self.ness)}")
+            self.ness = self_ness_filtered  # replace
+            # print(f"filtered count: {len(self.ness)}")
 
     def poc_receipts_v1(self, activity):
 
         parsed_poc = {}
-
-        # valid_text = "💩  Invalid"
         valid_text = "Invalid"
-        # time = nice_date(activity["time"])
         parsed_poc["height"] = activity["height"]
         parsed_poc["hash"] = activity["hash"]
         parsed_poc["time"] = activity["time"]
@@ -358,7 +352,6 @@ class happy:
 
         # challenge accepted
         if "challenger" in activity and activity["challenger"] == self.hotspot:
-            # output_message.append(f"🏁 ...Challenged Beaconer, {wit_text}  `{time}`")
             parsed_poc["name"] = "...Challenged Beaconer"
             parsed_poc["subtype"] = "challenged_beaconer"
             parsed_poc["witnesses"] = len(witnesses)
@@ -375,13 +368,9 @@ class happy:
             for wit in witnesses:
                 if bool(wit["is_valid"]):
                     valid_wit_count = valid_wit_count + 1
-            # msg = f"🌋 Sent Beacon, {wit_text}"
             if bool(wit_count):
                 if valid_wit_count == len(witnesses):
                     valid_wit_count = "All"
-                # msg += f", {valid_wit_count} Valid"
-            # msg += f"  `{time}`"
-            # output_message.append(msg)
 
             parsed_poc["name"] = "Sent Beacon"
             parsed_poc["subtype"] = "sent_beacon"
@@ -404,7 +393,6 @@ class happy:
                     witness_info = ""
                     if bool(w["is_valid"]):
                         valid_witness = True
-                        # valid_text = "🛸 Valid"
                         valid_text = "Valid"
                         parsed_poc["emoji"] = "🛸"
                         witness_info = f", 1 of {wit_count}"
@@ -412,9 +400,6 @@ class happy:
                         # valid_text = "💩 Invalid"
                         valid_text = "Invalid"
                         parsed_poc["emoji"] = "💩"
-                        # witness_info = ", " + self.nice_invalid_reason(
-                        #    w["invalid_reason"]
-                        # )
                         parsed_poc["invalid_reason"] = self.nice_invalid_reason(
                             w["invalid_reason"]
                         )
@@ -430,14 +415,11 @@ class happy:
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
             parsed_poc["valid_witnesses"] = vw
 
-            # output_message.append(f"{valid_text} Witness{witness_info}  `{time}`")
-
         # other
         else:
             ac_type = activity["type"]
             parsed_poc["name"] = ac_type.upper()
             parsed_poc["emoji"] = "🏁"
-            # output_message.append(f"🏁 poc_receipts_v1 - {ac_type.upper()}  `{time}`")
 
         return parsed_poc
 
@@ -454,18 +436,13 @@ class happy:
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
             self.vars["json_file_input"] = loadvars
             self.load_json_data()
-            # print("load_json_data() ln 398")
-            # print(f"json input str: {self.vars['json_file_input']}")
         elif (
             "json_file_input" in loadvars
             and loadvars["json_file_input"].find(".json") != -1
         ):
 
             self.json_file_input = loadvars["json_file_input"]
-            # print(f"vars.json_file_input: {self.json_file_input}")
-            # load json, set as activities
             self.load_json_data()
-            # print("load_json_data() ln 408")
 
         # loadvars is dict has "data" and bool("data")
         if (
