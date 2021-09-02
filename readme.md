@@ -9,7 +9,7 @@
 from hap import happy
 
 # Hotspot Address
-hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq"
+hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD"
 
 # Instantiate HAPpy
 happy = happy(hotspot_address)
@@ -79,7 +79,7 @@ git clone https://github.com/co8/happy
 from hap import happy
 
 # only required variable. set your hotspot address
-hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
+hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD"
 
 # instantiate happy
 happy = happy(hotspot_address)
@@ -173,7 +173,7 @@ optional_variables = {
     "json_file_input": "data.json",  # use a JSON file instead making an Blockchain API call
     "json_file_output": "output.json",  # if activities, output happy.ness response to a JSON file
     "get_cursor": False,  # if True, API call will get a new cursor and use it for an API Request
-    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT...", # provide cursor for API pagination.
+    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # provide cursor for API pagination.
     "max": 25,  # limit number of activities to parse. API pagination max is ±100
 }
 
