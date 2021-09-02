@@ -62,7 +62,7 @@ print(happy.ness)
 
 Option A: Download from Github
 
-- Download Latest https://github.com/co8/happy/archive/refs/heads/master.zip
+- Download Latest https://github.com/co8/happy/archive/refs/heads/latest.zip
 
 Option B: Clone from Github
 
