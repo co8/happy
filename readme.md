@@ -94,16 +94,17 @@ activities count: 3
 
 # loop through activities in happy.ness
 for activity in happy.ness:
-    happy_activity = f"{activity['emoji']} {activity['name']} {activity['time_nice']}"
+  if_reward = ""
   if activity['type'] == "rewards_v2":
-    happy_activity .= f", {activity['hnt_emoji']} {activity['amount']}, {activity['reward_type']}"
+    if_reward = f" {activity['hnt_emoji']}{activity['amount']}, {activity['reward_type']}"
+  happy_activity = f"{activity['emoji']} {activity['name']}{if_reward} {activity['time_nice']}"
   print(happy_activity)
 
 ```
 
 ```
 # output
-🍪 Rewards 21:28 31/AUG, 🥓0.101, Beacon
+🍪 Rewards 🥓0.101, Beacon 21:28 31/AUG
 🛸 Valid Witness 21:18 31/AUG
 💩 Invalid Witness 20:20 31/AUG
 ```
