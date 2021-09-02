@@ -13,7 +13,8 @@ happy = happy(hotspot_address)
 #Response
 print(happy.ness)
 
-{
+[
+  {
     "height": 966398,
     "hash": "ONGyfDAfMQL8gVMPFqUEypxVIjz_l7jxTvG9D2_NkRc",
     "time": 1629033383,
@@ -24,7 +25,8 @@ print(happy.ness)
     "witnesses": 25,
     "witness_text": "Witnesses",
     "valid_witnesses": 20
-},
+  },
+]
 ```
 
 🛸 Valid Witness, 1 of 25, 20 Valid Witnesses, 09:16 15/AUG at height 966,398
@@ -77,11 +79,13 @@ hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
 #instantiate happy
 happy = happy(hotspot_address)
 
-#response object. newest API data without pagination
+#response object. newest API data without pagination.
 happy.ness
 
 print(f"activities count: {len(happy.ness)}")
-#activities count: 3
+
+# output
+activities count: 3
 
 #loop through activities in happy.ness
 for activity in happy.ness:
@@ -156,10 +160,10 @@ print(happy.ness)
 ]
 ```
 
-You can also pass optional attributes to HAPpy
+You can also pass optional variables to HAPpy
 
 ```python
-optional_attributes = {
+optional_variables = {
     "json_file_input": "data.json",  # use a JSON file instead making an Blockchain API call
     "json_file_output": "output.json",  # if activities, output happy.ness response to a JSON file
     "get_cursor": False,  # if True, API call will get a new cursor and use it for an API Request
@@ -168,7 +172,7 @@ optional_attributes = {
 }
 
 #limit of 25 activities, save to output.json
-optional_attributes = {
+optional_variables = {
     "json_file_output": "output.json",
     "get_cursor": True
     "max": 25,
@@ -177,7 +181,7 @@ optional_attributes = {
 # No Activities in Response?
 # If your response does not have activities, try setting 'get_cursor' and 'max' to use API pagination to get recent activities
 
-happy = happy(hotspot_address, optional_attributes)
+happy = happy(hotspot_address, optional_variables)
 
 ```
 
@@ -187,7 +191,7 @@ Pass JSON file as a string or within a dict
 # Parse an Blockchain API JSON file, pass as a string
 happy = happy(hotspot_address, "activities.json")
 
-#Or pass within a dict with other attributes
+#Or pass within a dict with other variables
 json_file_input_with_vars = {
   "json_file_input" : "activities.json",
   "max" : 5 # optional
