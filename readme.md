@@ -17,7 +17,7 @@ happy = happy(hotspot_address)
 # Response Object
 print(happy.ness)
 
-# Happy.ness Output
+# happy.ness Output
 [
   {
     "height": 966398,
