@@ -183,10 +183,11 @@ optional_variables = {
 
 }
 
-#maximum of 25 activities, save to output.json
+#Helium API request using new cursor, maximum of 25 activities, filter by Beacon Rewards, save to output.json
 optional_variables = {
     "json_file_output": "output.json",
-    "get_cursor_and_activities": True
+    "get_cursor_and_activities": True,
+    "filter": ["rewards_beacon"]
     "max": 25,
 }
 
