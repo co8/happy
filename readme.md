@@ -92,18 +92,18 @@ print(f"activities count: {len(happy.ness)}")
 # output
 activities count: 3
 
-#loop through activities in happy.ness
+# loop through activities in happy.ness
 for activity in happy.ness:
     happy_activity = f"{activity['emoji']} {activity['name']} {activity['time_nice']}"
   if activity['type'] == "rewards_v2":
-    happy_activity .= f", {activity['hnt_emoji']} {activity['amount']}"
+    happy_activity .= f", {activity['hnt_emoji']} {activity['amount']}, {activity['reward_type']}"
   print(happy_activity)
 
 ```
 
 ```
-#output
-🍪 Rewards 21:28 31/AUG, 🥓0.101
+# output
+🍪 Rewards 21:28 31/AUG, 🥓0.101, Beacon
 🛸 Valid Witness 21:18 31/AUG
 💩 Invalid Witness 20:20 31/AUG
 ```
@@ -196,7 +196,7 @@ Pass JSON file as a string or within a dict
 # Parse an Blockchain API JSON file, pass as a string
 happy = happy(hotspot_address, "activities.json")
 
-#Or pass within a dict with other variables
+# Or pass within a dict with other variables
 json_file_input_with_vars = {
   "json_file_input" : "activities.json",
   "max" : 5 # optional
@@ -217,7 +217,7 @@ print(happy.vars)
     "json_file_input": "data.json",
     "json_file_output": "output.json",
     "get_cursor": False,
-    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT...",
+    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT",
     "max": 25,
 }
 ```
