@@ -3,6 +3,7 @@ output.json
 output*.json
 data.json
 test.py
+hap\ copy.py
 
 #Mac
 .DS_Store

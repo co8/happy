@@ -148,25 +148,22 @@ class happy:
             json.dump(self.ness, outfile)
 
     def get_cursor(self):
-        # if (
-        #    "get_cursor" in self.vars
-        #    and "cursor" in self.vars
-        #    and bool(self.vars["cursor"])
-        # ):
-        if "get_cursor" in self.vars:
+        try:
+            # LIVE API data
+            activity_endpoint = (
+                self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
+            )
+            activity_request = requests.get(activity_endpoint)
+            data = activity_request.json()
+            self.vars["cursor"] = data["cursor"]
 
-            try:
-                # LIVE API data
-                activity_endpoint = (
-                    self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
-                )
-                activity_request = requests.get(activity_endpoint)
-                data = activity_request.json()
-                self.vars["cursor"] = data["cursor"]
+        except:
+            print("cannot get cursor from Helium API. I quit")
+            quit()
 
-            except:
-                print("cannot get cursor from Helium API. I quit")
-                quit()
+    # def func_get_cursor_and_activities(self):
+    #    if "get_cursor_and_activities" in self.vars:
+    #        self.only_get_cursoronly_get_cursor()
 
     ###############################################
     def load_activity_data(self):
@@ -181,10 +178,15 @@ class happy:
 
         else:
 
-            # add cursor if set, get and set cursor if get_cursor
+            # add cursor if set, get and set cursor if get_cursor_and_activities
             add_cursor = ""
-            if "cursor" in self.vars or "get_cursor" in self.vars:
-                if "get_cursor" in self.vars and bool(self.vars["get_cursor"]):
+            if (
+                "cursor" in self.vars
+                and bool(self.vars["cursor"])
+                or "get_cursor_and_activities" in self.vars
+                and bool(self.vars["get_cursor_and_activities"])
+            ):
+                if "get_cursor_and_activities" in self.vars:
                     self.get_cursor()
                     # print("cursor: NEW")
                 elif "cursor" in self.vars and bool(self.vars["cursor"]):
@@ -254,19 +256,24 @@ class happy:
                 if activity["type"] == "rewards_v2":
                     for reward in activity["rewards"]:
                         parsed_activity["type"] = activity["type"]
+                        parsed_activity["subtype"] = "rewards"
                         parsed_activity["name"] = "Rewards"
                         parsed_activity["emoji"] = "🍪"
                         parsed_activity["hnt_emoji"] = "🥓"
                         parsed_activity["reward_type"] = self.reward_short_name(
                             reward["type"]
                         )
+                        parsed_activity["subtype"] += (
+                            "_" + parsed_activity["reward_type"].lower()
+                        )
                         parsed_activity["amount"] = self.nice_hnt_amount_or_seconds(
                             reward["amount"]
                         )
-                        # output_message.append(f"🍪 Reward 🥓{amt}, {rew}  `{time}`")
-                # transferred data
+
+                # transferred packets
                 elif activity["type"] == "state_channel_close_v1":
                     parsed_activity["type"] = activity["type"]
+                    parsed_activity["subtype"] = "packets"
                     parsed_activity["name"] = "Transferred Packets"
                     parsed_activity["emoji"] = "🚛"
                     for summary in activity["state_channel"]["summaries"]:
@@ -275,22 +282,16 @@ class happy:
                         parsed_activity["packets_text"] = f"Packet{packet_plural}"
                         parsed_activity["num_dcs"] = summary["num_dcs"]
 
-                        # output_message.append(
-                        #    f"🚛 Transferred {summary['num_packets']} Packet{packet_plural} ({summary['num_dcs']} DC)  `{time}`"
-                        # )
-
                 # ...challenge accepted
                 elif activity["type"] == "poc_request_v1":
                     parsed_activity["type"] = activity["type"]
                     parsed_activity["name"] = "Created Challenge..."
+                    parsed_activity["subtype"] = "created_challenge"
                     parsed_activity["emoji"] = "🎲"
-                    # output_message.append(f"🎲 Created Challenge...  `{time}`")
 
                 # beacon sent, valid witness, invalid witness
                 elif activity["type"] == "poc_receipts_v1":
                     parsed_activity = self.poc_receipts_v1(activity)
-                    # parsed_poc = poc_receipts_v1(activity)
-                    # parsed_activity = {**parsed_activity, **parsed_poc}
 
                 # other
                 else:
@@ -301,6 +302,37 @@ class happy:
                     # output_message.append(f"🚀 {other_type.upper()}  `{time}`")
 
                 self.ness.append(parsed_activity)
+            self.filter_ness()
+
+    def filter_ness(self):
+        # filtering
+        if "filter" in self.vars:
+            print("filter in vars")
+            # if string, convert filter to list
+            filters = self.vars["filter"]
+            if isinstance(self.vars["filter"], str):
+                filters = []
+                filters.append(self.vars["filter"])
+
+            print("filters: ", end="")
+            print(filters)
+            print(type(filters))
+
+            # loop and find matches
+            print(f"original count: {len(self.ness)}")
+            self_ness_filtered = []
+            for ness_index, ness_var in enumerate(self.ness):
+                if (
+                    self.ness[ness_index]["type"] in filters
+                    or self.ness[ness_index]["subtype"] in filters
+                ):
+                    # print(
+                    #    f"IN FILTER {ness_index} {self.ness[ness_index]['type']} {self.ness[ness_index]['subtype']}"
+                    # )
+                    self_ness_filtered.append(self.ness[ness_index])
+
+            self.ness = self_ness_filtered
+            print(f"filtered count: {len(self.ness)}")
 
     def poc_receipts_v1(self, activity):
 
@@ -328,6 +360,7 @@ class happy:
         if "challenger" in activity and activity["challenger"] == self.hotspot:
             # output_message.append(f"🏁 ...Challenged Beaconer, {wit_text}  `{time}`")
             parsed_poc["name"] = "...Challenged Beaconer"
+            parsed_poc["subtype"] = "challenged_beaconer"
             parsed_poc["witnesses"] = len(witnesses)
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
 
@@ -342,7 +375,7 @@ class happy:
             for wit in witnesses:
                 if bool(wit["is_valid"]):
                     valid_wit_count = valid_wit_count + 1
-            msg = f"🌋 Sent Beacon, {wit_text}"
+            # msg = f"🌋 Sent Beacon, {wit_text}"
             if bool(wit_count):
                 if valid_wit_count == len(witnesses):
                     valid_wit_count = "All"
@@ -351,6 +384,7 @@ class happy:
             # output_message.append(msg)
 
             parsed_poc["name"] = "Sent Beacon"
+            parsed_poc["subtype"] = "sent_beacon"
             parsed_poc["emoji"] = "🌋"
             parsed_poc["witnesses"] = len(witnesses)
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
@@ -384,6 +418,7 @@ class happy:
                         parsed_poc["invalid_reason"] = self.nice_invalid_reason(
                             w["invalid_reason"]
                         )
+                parsed_poc["subtype"] = f"{valid_text.lower()}_witness"
 
             # add valid witness count among witnesses
             if bool(valid_witness) and vw >= 1:

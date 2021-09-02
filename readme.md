@@ -170,17 +170,23 @@ You can also pass optional variables to HAPpy
 
 ```python
 optional_variables = {
-    "json_file_input": "data.json",  # use a JSON file instead making an Blockchain API call
+    "data": data_list,  # 'data' variable from helium blockchain api response
+    "json_file_input": "data.json",  # use a JSON file instead making a Blockchain API request
     "json_file_output": "output.json",  # if activities, output happy.ness response to a JSON file
-    "get_cursor": False,  # if True, API call will get a new cursor and use it for an API Request
-    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # provide cursor for API pagination.
-    "max": 25,  # limit number of activities to parse. API pagination max is ±100
+    "filter": "str or list[]", # in_dev # filter by types or subtypes
+    "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # if provided, cursor will be used with API request.
+    "get_cursor_and_activities" : False, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for smaller response
+    "max": 25,  # maximum number of activities. API pagination max is ±100
+    # "only_get_cursor": True, #in_dev # Fetch cursor. no activities
+    # "get_hotspot_data": False,  # in_dev
+    # "get_wallet_data": False,  # in_dev
+
 }
 
-#limit of 25 activities, save to output.json
+#maximum of 25 activities, save to output.json
 optional_variables = {
     "json_file_output": "output.json",
-    "get_cursor": True
+    "get_cursor_and_activities": True
     "max": 25,
 }
 
@@ -205,6 +211,24 @@ json_file_input_with_vars = {
 happy = happy(hotspot_address, json_file_input_with_vars)
 ```
 
+<!--
+### Other Happy Methods
+
+````python
+# values is available in the Vars object
+
+# gets a new page 1 cursor from API
+happy.get_cursor()
+
+# happy.vars['cursor']
+
+# gets time as timestamp and nice format
+happy.get_time()
+
+# happy.vars['now'] # timestamp
+# happy.vars['time'] # 16:24 15/JAN
+-->
+
 ---
 
 ### Access HAPpy Vars
@@ -217,7 +241,6 @@ print(happy.vars)
 {
     "json_file_input": "data.json",
     "json_file_output": "output.json",
-    "get_cursor": False,
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT",
     "max": 25,
 }
