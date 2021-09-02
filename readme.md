@@ -5,9 +5,10 @@
 <!-- **Listed as a Helium Community Tool** [https://explorer.helium.com/tools](https://explorer.helium.com/tools) -->
 
 ```PYTHON
-# Only Needs Your Hotspot Address
+# Hotspot Address
 hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq"
 
+# Instantiate HAPpy
 happy = happy(hotspot_address)
 
 # Response Object
