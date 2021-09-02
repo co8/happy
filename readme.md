@@ -5,14 +5,15 @@
 <!-- **Listed as a Helium Community Tool** [https://explorer.helium.com/tools](https://explorer.helium.com/tools) -->
 
 ```PYTHON
-# only need your hotspot address
-hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
+# Only Needs Your Hotspot Address
+hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq"
 
 happy = happy(hotspot_address)
 
-#Response
+# Response Object
 print(happy.ness)
 
+# Output
 [
   {
     "height": 966398,
@@ -76,10 +77,10 @@ from hap import happy
 # only required variable. set your hotspot address
 hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq..."
 
-#instantiate happy
+# instantiate happy
 happy = happy(hotspot_address)
 
-#response object. newest API data without pagination.
+# response object. newest API data without pagination.
 happy.ness
 
 print(f"activities count: {len(happy.ness)}")
