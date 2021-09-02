@@ -5,6 +5,9 @@
 <!-- **Listed as a Helium Community Tool** [https://explorer.helium.com/tools](https://explorer.helium.com/tools) -->
 
 ```PYTHON
+# Import
+from hap import happy
+
 # Hotspot Address
 hotspot_address = "112MWdscG3DjHTxdCrtuLkkXNSbxCkbq"
 
