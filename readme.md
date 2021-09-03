@@ -43,10 +43,16 @@ print(happy.ness)
 - Uses [Helium Blockchain API](https://docs.helium.com/api/blockchain/introduction/)
 - Python 3.9+
 - Easy to use Response
-- Optionally Write Response to JSON file
+- Options:
+  - Current Activities or with Pagination/Cursor
+  - Input JSON file or Object
+  - Write Response to JSON file
+  - Filter by Type and Subtype (rewards_v2, rewards_beacon)
+  - Set Maximum
 - Parsed and Formatted Data
   - Name of Activity Type
   - Reward Amounts and Types
+  - Subtypes for easy filtering (valid_witness, sent_beacon, rewards_challenger)
   - HNT format amounts for Regular and Micropayments
   - Pluralized Words
   - Formatted Date/Time
