@@ -217,7 +217,7 @@ class happy:
         with open(self.vars["json_file_output"], "w") as outfile:
             json.dump(self.ness, outfile)
 
-    def get_cursor(self):
+    def _get_cursor_only(self):
         try:
             # LIVE API data
             activity_endpoint = (
@@ -233,7 +233,7 @@ class happy:
 
     # def func_get_cursor_and_activities(self):
     #    if "get_cursor_and_activities" in self.vars:
-    #        self.only_get_cursoronly_get_cursor()
+    #        self.only_get_cursoronly__get_cursor_only()
 
     ###############################################
     def _load_activity_data(self):
@@ -252,7 +252,7 @@ class happy:
                 and bool(self.vars["get_cursor_and_activities"])
             ):
                 if "get_cursor_and_activities" in self.vars:
-                    self.get_cursor()
+                    self._get_cursor_only()
                 elif "cursor" in self.vars and bool(self.vars["cursor"]):
                     add_cursor = f"?cursor={self.vars['cursor']}"
                 add_cursor = f"?cursor={self.vars['cursor']}"

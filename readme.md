@@ -184,10 +184,9 @@ optional_variables = {
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # if provided, cursor will be used with API request.
     "get_cursor_and_activities" : False, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for smaller response
     "max": 25,  # maximum number of activities. API pagination max is ±100
-    # "only_get_cursor": True, #in_dev # Fetch cursor. no activities
-    # "get_hotspot_data": False,  # in_dev
-    # "get_wallet_data": False,  # in_dev
-
+    "get_hotspot": True, # returns hotspot info to happy.vars["hotspot"]
+    "get_wallet": True, # returns wallet info to happy.vars["wallet"]
+    # "get_cursor": True, #in_dev # Fetch cursor. no activities
 }
 
 #Helium API request using new cursor, maximum of 25 activities, filter by Beacon Rewards, save to output.json
