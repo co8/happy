@@ -180,13 +180,14 @@ optional_variables = {
     "data": data_list,  # 'data' variable from helium blockchain api response
     "json_file_input": "data.json",  # use a JSON file instead making a Blockchain API request
     "json_file_output": "output.json",  # if activities, output happy.ness response to a JSON file
-    "filter": "str or list[]", # in_dev # filter by types or subtypes
+    "filter": "rewards_v2", # in_dev # filter by types or subtypes
+    "filter": ["rewards_beacon", "rewards_witness"], # 'filter' can be a string or a list
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # if provided, cursor will be used with API request.
-    "get_cursor_and_activities" : False, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for smaller response
+    "get_cursor_and_activities" : True, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for smaller response
     "max": 25,  # maximum number of activities. API pagination max is ±100
     "get_hotspot": True, # returns hotspot info to happy.vars["hotspot"]
     "get_wallet": True, # returns wallet info to happy.vars["wallet"]
-    # "get_cursor": True, #in_dev # Fetch cursor. no activities
+    # "get_cursor_only": True, #in_dev # Fetch cursor. no activities
 }
 
 #Helium API request using new cursor, maximum of 25 activities, filter by Beacon Rewards, save to output.json

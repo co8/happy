@@ -50,7 +50,7 @@ class happy:
         "data_credits": "Data",
     }
 
-    def load_json_data(self):
+    def _load_json_data(self):
 
         # get json_file_input from vars if exists
         if "json_file_input" in self.vars and bool(self.vars["json_file_input"]):
@@ -69,7 +69,13 @@ class happy:
                         self.vars[key] = var
 
     def _load_hotspot_data(self):
-        if "get_hotspot" in self.vars and bool(self.vars["get_hotspot"]):
+
+        if (
+            "get_wallet" in self.vars
+            and bool(self.vars["get_wallet"])
+            or "get_hotspot" in self.vars
+            and bool(self.vars["get_hotspot"])
+        ):
 
             # try to get json or return error
             status = ""
@@ -99,7 +105,9 @@ class happy:
                     "owner": hs["owner"],
                     "name": self.nice_hotspot_name(hs["name"]),
                     "initials": "",
-                    "status": str(hs["status"]["online"]).upper(),
+                    "status": str(hs["status"]["online"]).capitalize(),
+                    "block_height": "",
+                    "sync": "",
                     "height": hs["status"]["height"],
                     "block": hs["block"],
                     "reward_scale": "{:.2f}".format(round(hs["reward_scale"], 2)),
@@ -107,15 +115,31 @@ class happy:
                 self.vars["hotspot"]["initials"] = self.nice_hotspot_initials(
                     self.vars["hotspot"]["name"]
                 )
+                ###block height percentage
+                block_height = round(
+                    self.vars["hotspot"]["height"]
+                    / self.vars["hotspot"]["block"]
+                    * 100,
+                    3,
+                )
+                self.vars["hotspot"]["block_height"] = str(block_height) + "%"
+                self.vars["hotspot"]["sync"] = (
+                    "Synced" if block_height > 98 else str(block_height) + "%"
+                )
 
     # need to get hotspot data to get owner to then get wallet
     def _load_wallet_data(self):
 
-        # get owner from hotspot for request
-        if "hotspot" not in self.vars and "owner" not in self.vars["hotspot"]:
-            self._load_hotspot_data()
-
         if "get_wallet" in self.vars and bool(self.vars["get_wallet"]):
+
+            # get owner from hotspot for request
+            if (
+                "hotspot" not in self.vars
+                or "hotspot" not in self.vars
+                and "owner" in self.vars["hotspot"]
+            ):
+                self._load_hotspot_data()
+
             # try to get json or return error
             status = ""
             try:
@@ -156,6 +180,14 @@ class happy:
                     ),
                 }
 
+                # delete hotspot from self.vars if not requested
+                if (
+                    "get_hotspot" not in self.vars
+                    or "get_hotspot" in self.vars
+                    and not bool(self.vars["get_hotspot"])
+                ):
+                    del self.vars["hotspot"]
+
     def trim_activities(self):
         if (
             "max" in self.vars
@@ -174,7 +206,7 @@ class happy:
         return timestamp.strftime("%H:%M %d/%b").upper()
 
     def nice_hotspot_name(self, name):
-        return name.replace("-", " ").upper()
+        return name.replace("-", " ").title()
 
     def nice_hotspot_initials(self, name):
         return "".join(item[0].upper() for item in name.split())
@@ -194,6 +226,10 @@ class happy:
         # int. 8 decimal places for micropayments
         if amt in range(0, 100000):
             amt_output = "{:.8f}".format(amt / niceNumSmall).rstrip("0")
+
+        # fix nice 0
+        if amt_output == "0.":
+            amt_output = "0.000"
 
         return str(amt_output)
 
@@ -233,7 +269,7 @@ class happy:
 
     # def func_get_cursor_and_activities(self):
     #    if "get_cursor_and_activities" in self.vars:
-    #        self.only_get_cursoronly__get_cursor_only()
+    #        self._get_cursor_only()
 
     ###############################################
     def _load_activity_data(self):
@@ -479,7 +515,7 @@ class happy:
         # loadvars is str and is ends with .json
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
             self.vars["json_file_input"] = loadvars
-            self.load_json_data()
+            self._load_json_data()
 
         elif (
             "json_file_input" in loadvars
@@ -487,7 +523,7 @@ class happy:
         ):
 
             self.json_file_input = loadvars["json_file_input"]
-            self.load_json_data()
+            self._load_json_data()
 
         # loadvars is dict has "data" and bool("data")
         if (
