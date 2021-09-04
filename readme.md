@@ -92,6 +92,7 @@ happy = happy(hotspot_address)
 
 # response object. newest API data without pagination.
 happy.ness
+# happy.response is also an alias of happy.ness
 
 print(f"activities count: {len(happy.ness)}")
 
@@ -251,6 +252,9 @@ print(happy.vars)
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT",
     "max": 25,
 }
+
+print(happy.hotspot)
+"112MWdscG3DjHTxdCrtuLkkXNSbxCkbqkuiu8X9zFDwsBfa2teCD"
 ```
 
 ---
