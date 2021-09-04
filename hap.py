@@ -68,6 +68,94 @@ class happy:
                     for key, var in json_load.items():
                         self.vars[key] = var
 
+    def _load_hotspot_data(self):
+        if "get_hotspot" in self.vars and bool(self.vars["get_hotspot"]):
+
+            # try to get json or return error
+            status = ""
+            try:
+                # LIVE API data
+                hotspot_request = requests.get(
+                    self._helium_api_endpoint + "hotspots/" + self.hotspot
+                )
+                hs = hotspot_request.json()
+                hs = hs["data"]
+
+            except requests.RequestException:
+                status = "Connectivity"
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                status = "Parsing JSON"
+            except (IndexError, KeyError):
+                status = "JSON format"
+
+            if bool(status):
+                print(f"Hotspot API Error: {status}")
+                quit()
+
+            # success. add vars into vars.hotspot
+            else:
+                self.vars["hotspot"] = {
+                    "address": hs["address"],
+                    "owner": hs["owner"],
+                    "name": self.nice_hotspot_name(hs["name"]),
+                    "initials": "",
+                    "status": str(hs["status"]["online"]).upper(),
+                    "height": hs["status"]["height"],
+                    "block": hs["block"],
+                    "reward_scale": "{:.2f}".format(round(hs["reward_scale"], 2)),
+                }
+                self.vars["hotspot"]["initials"] = self.nice_hotspot_initials(
+                    self.vars["hotspot"]["name"]
+                )
+
+    # need to get hotspot data to get owner to then get wallet
+    def _load_wallet_data(self):
+
+        # get owner from hotspot for request
+        if "hotspot" not in self.vars and "owner" not in self.vars["hotspot"]:
+            self._load_hotspot_data()
+
+        if "get_wallet" in self.vars and bool(self.vars["get_wallet"]):
+            # try to get json or return error
+            status = ""
+            try:
+                # LIVE API data
+                wallet_request = requests.get(
+                    self._helium_api_endpoint
+                    + "accounts/"
+                    + self.vars["hotspot"]["owner"]
+                )
+                w = wallet_request.json()
+
+            except requests.RequestException:
+                status = "Connectivity"
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                status = "Parsing JSON"
+            except (IndexError, KeyError):
+                status = "JSON format"
+
+            if bool(status):
+                print(f"Wallet API Error: {status}")
+                quit()
+
+            # success. add vars into vars.wallet
+            else:
+                self.vars["wallet"] = {
+                    "block": w["data"]["block"],
+                    "balance": w["data"]["balance"],
+                    "balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["balance"]
+                    ),
+                    "dc_balance": w["data"]["dc_balance"],
+                    "dc_balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["dc_balance"]
+                    ),
+                    "staked_balance": w["data"]["staked_balance"],
+                    "staked_balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["staked_balance"]
+                    ),
+                }
+
     def trim_activities(self):
         if (
             "max" in self.vars
@@ -85,10 +173,10 @@ class happy:
         timestamp = datetime.fromtimestamp(time)
         return timestamp.strftime("%H:%M %d/%b").upper()
 
-    def nice_hotspot_name(name):
+    def nice_hotspot_name(self, name):
         return name.replace("-", " ").upper()
 
-    def nice_hotspot_initials(name):
+    def nice_hotspot_initials(self, name):
         return "".join(item[0].upper() for item in name.split())
 
     def nice_hnt_amount_or_seconds(self, amt):
@@ -431,6 +519,13 @@ class happy:
 
         # loop activities
         self._loop_activities()
+
+        # if set in loadvars
+        # if load_wallet set in loadvars
+        self._load_hotspot_data()
+
+        # if set in loadvars
+        self._load_wallet_data()
 
         if "json_file_output" in self.vars and bool(self.vars["json_file_output"]):
             self._write_json()
