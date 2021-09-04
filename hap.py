@@ -18,49 +18,43 @@ import requests
 import json
 from datetime import datetime
 
+####
+# Notes:
+# To Add: Private methods, functions and data members
+# _ : you shouldn’t access this method because it’s not part of the API
+# __ : mangle the attribute names of a class to avoid conflicts of attribute names between classes
+####
+
 # main class
 class happy:
     """HAPpy - Helium API Parser, Python"""
 
     # attr
-    hotspot = json_file_input = ""
+    hotspot = ""
     vars = {}
-    activities = {}  # input
-    ness = []  # output
+    activities = []  # input
+    ness = response = []  # output
+    #
+    _helium_api_endpoint = "https://api.helium.io/v1/"
+    json_file_input = ""  # keep?
 
-    # vars
-    helium_api_endpoint = "https://api.helium.io/v1/"
-    # hs = {}
-    activities = []
-
-    # config_file = "config.json"
-    # output_message = []
-    # activity_history = []
-    # wellness_check = history_repeats = wellness_check_seconds = 0
-    # report_interval_seconds = output_message_length = 0
-    # interval_pop_status_seconds = int(60 * pop_status_minutes)
-    # send = send_report = add_welcome = send_wellness_check = False
-
-    invalid_reason_short_names = {
+    _invalid_reason_short_names = {
         "witness_too_close": "Too Close",
         "witness_rssi_too_high": "RSSI Too High",
         "witness_rssi_below_lower_bound": "RSSI Below Lower Bound",
     }
-    reward_short_names = {
+    __reward_short_names = {
         "poc_witnesses": "Witness",
         "poc_challengees": "Beacon",
         "poc_challengers": "Challenger",
         "data_credits": "Data",
     }
 
-    def load_json_data(self):
-        # print("load_json_data()")
+    def _load_json_data(self):
+
         # get json_file_input from vars if exists
         if "json_file_input" in self.vars and bool(self.vars["json_file_input"]):
             self.json_file_input = self.vars["json_file_input"]
-
-        # print(self.json_file_input)
-        # exit()
 
         if bool(self.json_file_input):
 
@@ -74,18 +68,135 @@ class happy:
                     for key, var in json_load.items():
                         self.vars[key] = var
 
+    def _load_hotspot_data(self):
+
+        if (
+            "get_wallet" in self.vars
+            and bool(self.vars["get_wallet"])
+            or "get_hotspot" in self.vars
+            and bool(self.vars["get_hotspot"])
+        ):
+
+            # try to get json or return error
+            status = ""
+            try:
+                # LIVE API data
+                hotspot_request = requests.get(
+                    self._helium_api_endpoint + "hotspots/" + self.hotspot
+                )
+                hs = hotspot_request.json()
+                hs = hs["data"]
+
+            except requests.RequestException:
+                status = "Connectivity"
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                status = "Parsing JSON"
+            except (IndexError, KeyError):
+                status = "JSON format"
+
+            if bool(status):
+                print(f"Hotspot API Error: {status}")
+                quit()
+
+            # success. add vars into vars.hotspot
+            else:
+                self.vars["hotspot"] = {
+                    "address": hs["address"],
+                    "owner": hs["owner"],
+                    "name": self.nice_hotspot_name(hs["name"]),
+                    "initials": "",
+                    "status": str(hs["status"]["online"]).capitalize(),
+                    "block_height": "",
+                    "sync": "",
+                    "height": hs["status"]["height"],
+                    "block": hs["block"],
+                    "reward_scale": "{:.2f}".format(round(hs["reward_scale"], 2)),
+                }
+                self.vars["hotspot"]["initials"] = self.nice_hotspot_initials(
+                    self.vars["hotspot"]["name"]
+                )
+                ###block height percentage
+                block_height = round(
+                    self.vars["hotspot"]["height"]
+                    / self.vars["hotspot"]["block"]
+                    * 100,
+                    3,
+                )
+                self.vars["hotspot"]["block_height"] = str(block_height) + "%"
+                self.vars["hotspot"]["sync"] = (
+                    "Synced" if block_height > 98 else str(block_height) + "%"
+                )
+
+    # need to get hotspot data to get owner to then get wallet
+    def _load_wallet_data(self):
+
+        if "get_wallet" in self.vars and bool(self.vars["get_wallet"]):
+
+            # get owner from hotspot for request
+            if (
+                "hotspot" not in self.vars
+                or "hotspot" not in self.vars
+                and "owner" in self.vars["hotspot"]
+            ):
+                self._load_hotspot_data()
+
+            # try to get json or return error
+            status = ""
+            try:
+                # LIVE API data
+                wallet_request = requests.get(
+                    self._helium_api_endpoint
+                    + "accounts/"
+                    + self.vars["hotspot"]["owner"]
+                )
+                w = wallet_request.json()
+
+            except requests.RequestException:
+                status = "Connectivity"
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                status = "Parsing JSON"
+            except (IndexError, KeyError):
+                status = "JSON format"
+
+            if bool(status):
+                print(f"Wallet API Error: {status}")
+                quit()
+
+            # success. add vars into vars.wallet
+            else:
+                self.vars["wallet"] = {
+                    "block": w["data"]["block"],
+                    "balance": w["data"]["balance"],
+                    "balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["balance"]
+                    ),
+                    "dc_balance": w["data"]["dc_balance"],
+                    "dc_balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["dc_balance"]
+                    ),
+                    "staked_balance": w["data"]["staked_balance"],
+                    "staked_balance_nice": self.nice_hnt_amount_or_seconds(
+                        w["data"]["staked_balance"]
+                    ),
+                }
+
+                # delete hotspot from self.vars if not requested
+                if (
+                    "get_hotspot" not in self.vars
+                    or "get_hotspot" in self.vars
+                    and not bool(self.vars["get_hotspot"])
+                ):
+                    del self.vars["hotspot"]
+
     def trim_activities(self):
         if (
             "max" in self.vars
             and bool(self.vars["max"])
             and len(self.activities) > self.vars["max"]
         ):
-            # print(f"trim_activities(): {self.vars['max']}")
             del self.activities[self.vars["max"] :]
 
     def get_time(self):
-        # global hs
-        # time functions
         now = datetime.now()
         self.vars["now"] = round(datetime.timestamp(now))
         self.vars["time"] = str(now.strftime("%H:%M %D"))
@@ -94,64 +205,59 @@ class happy:
         timestamp = datetime.fromtimestamp(time)
         return timestamp.strftime("%H:%M %d/%b").upper()
 
-    def nice_hotspot_name(name):
-        return name.replace("-", " ").upper()
-        # if not bool(config["name"]):
-        #    config["name"] = name.replace("-", " ").upper()
-        # return config["name"]
+    def nice_hotspot_name(self, name):
+        return name.replace("-", " ").title()
 
-    def nice_hotspot_initials(name):
+    def nice_hotspot_initials(self, name):
         return "".join(item[0].upper() for item in name.split())
-        # if not bool(config["initials"]):
-        #    name = nice_hotspot_name(name)
-        #    config["initials"] = "".join(item[0].upper() for item in name.split())
-        # return config["initials"]
 
     def nice_hnt_amount_or_seconds(self, amt):
         niceNum = 0.00000001
         niceNumSmall = 100000000
 
+        # float. for time i
         if isinstance(amt, float):
-            # float. for time i
             amt_output = "{:.2f}".format(amt)
+
+        # int. up to 3 decimal payments
         else:
-            # int. up to 3 decimal payments
             amt_output = "{:.3f}".format(amt * niceNum)
 
         # int. 8 decimal places for micropayments
-        # if amt > 0 and amt < 100000 :
         if amt in range(0, 100000):
             amt_output = "{:.8f}".format(amt / niceNumSmall).rstrip("0")
-            # amt_output = f"`{amt_output}`"
+
+        # fix nice 0
+        if amt_output == "0.":
+            amt_output = "0.000"
 
         return str(amt_output)
 
-    # invalid reason nice name, or raw reason if not in dict
-    def nice_invalid_reason(self, ir):
+    def _nice_invalid_reason(self, ir):
+        """invalid reason nice name, or raw reason if not in dict"""
         return (
-            self.invalid_reason_short_names[ir]
-            if ir in self.invalid_reason_short_names
+            self._invalid_reason_short_names[ir]
+            if ir in self._invalid_reason_short_names
             else str(ir)
         )
 
-    # activity type name to short name
-    def reward_short_name(self, reward_type):
+    def _reward_short_name(self, reward_type):
+        """activity type name to short name"""
         return (
-            self.reward_short_names[reward_type]
-            if reward_type in self.reward_short_names
+            self.__reward_short_names[reward_type]
+            if reward_type in self.__reward_short_names
             else reward_type.upper()
         )
 
-    def write_json(self):
-        # print(f"writing json: {self.vars['json_file_output']}")
+    def _write_json(self):
         with open(self.vars["json_file_output"], "w") as outfile:
             json.dump(self.ness, outfile)
 
-    def get_cursor(self):
+    def _get_cursor_only(self):
         try:
             # LIVE API data
             activity_endpoint = (
-                self.helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
+                self._helium_api_endpoint + "hotspots/" + self.hotspot + "/activity/"
             )
             activity_request = requests.get(activity_endpoint)
             data = activity_request.json()
@@ -163,22 +269,17 @@ class happy:
 
     # def func_get_cursor_and_activities(self):
     #    if "get_cursor_and_activities" in self.vars:
-    #        self.only_get_cursoronly_get_cursor()
+    #        self._get_cursor_only()
 
     ###############################################
-    def load_activity_data(self):
-        # global activities, config, hs, wellness_check, send, send_report, send_wellness_check
+    def _load_activity_data(self):
 
         # get activities from "data" in loadvars
-        if "data" in self.vars:  # and isinstance(self.vars["data"], list):
+        if "data" in self.vars:
             self.activities = self.vars["data"]
-            # load json, set as activities
-            # self.load_json_data()
-            # print("data from loadvars ln 180")
 
+        # add cursor if set, get and set cursor if get_cursor_and_activities
         else:
-
-            # add cursor if set, get and set cursor if get_cursor_and_activities
             add_cursor = ""
             if (
                 "cursor" in self.vars
@@ -187,11 +288,9 @@ class happy:
                 and bool(self.vars["get_cursor_and_activities"])
             ):
                 if "get_cursor_and_activities" in self.vars:
-                    self.get_cursor()
-                    # print("cursor: NEW")
+                    self._get_cursor_only()
                 elif "cursor" in self.vars and bool(self.vars["cursor"]):
                     add_cursor = f"?cursor={self.vars['cursor']}"
-                    # print("cursor: existing")
                 add_cursor = f"?cursor={self.vars['cursor']}"
 
             # try to get json or return error
@@ -199,7 +298,7 @@ class happy:
             try:
                 # LIVE API data
                 activity_endpoint = (
-                    self.helium_api_endpoint
+                    self._helium_api_endpoint
                     + "hotspots/"
                     + self.hotspot
                     + "/activity/"
@@ -220,26 +319,11 @@ class happy:
                 print(f"Activity API Error: {status}")
                 quit()
 
-            # quit if no data
-            # if not bool(self.activities):
-            #    resp = "No Activities"
-            #    print(resp)
-            #    self.vars["response"] = resp
-            #    quit()
-
-            # no data or send_report false
-            # elif not data["data"]:
-            #    print("API Success. No activities")
-            #    quit()
-
-            # set activities, set last.send, update config
-            # else:
-            # send = True
             self.activities = data["data"]
 
     ###############################################
 
-    def loop_activities(self):
+    def _loop_activities(self):
 
         self.trim_activities()
 
@@ -260,7 +344,7 @@ class happy:
                         parsed_activity["name"] = "Rewards"
                         parsed_activity["emoji"] = "🍪"
                         parsed_activity["hnt_emoji"] = "🥓"
-                        parsed_activity["reward_type"] = self.reward_short_name(
+                        parsed_activity["reward_type"] = self._reward_short_name(
                             reward["type"]
                         )
                         parsed_activity["subtype"] += (
@@ -291,7 +375,7 @@ class happy:
 
                 # beacon sent, valid witness, invalid witness
                 elif activity["type"] == "poc_receipts_v1":
-                    parsed_activity = self.poc_receipts_v1(activity)
+                    parsed_activity = self._poc_receipts_v1(activity)
 
                 # other
                 else:
@@ -299,27 +383,25 @@ class happy:
                     other_type_name = activity["type"]
                     parsed_activity["name"] = other_type_name.upper()
                     parsed_activity["emoji"] = "🚀"
-                    # output_message.append(f"🚀 {other_type.upper()}  `{time}`")
 
                 self.ness.append(parsed_activity)
-            self.filter_ness()
+            self._filter_ness()
+            self._clone_ness_response()
 
-    def filter_ness(self):
+    def _clone_ness_response(self):
+        """Response is an alias of Ness"""
+        self.response = self.ness
+
+    def _filter_ness(self):
         # filtering
         if "filter" in self.vars:
-            print("filter in vars")
             # if string, convert filter to list
             filters = self.vars["filter"]
             if isinstance(self.vars["filter"], str):
                 filters = []
                 filters.append(self.vars["filter"])
 
-            print("filters: ", end="")
-            print(filters)
-            print(type(filters))
-
             # loop and find matches
-            print(f"original count: {len(self.ness)}")
             self_ness_filtered = []
             for ness_index, ness_var in enumerate(self.ness):
                 if (
@@ -329,9 +411,8 @@ class happy:
                     self_ness_filtered.append(self.ness[ness_index])
 
             self.ness = self_ness_filtered  # replace
-            # print(f"filtered count: {len(self.ness)}")
 
-    def poc_receipts_v1(self, activity):
+    def _poc_receipts_v1(self, activity):
 
         parsed_poc = {}
         valid_text = "Invalid"
@@ -348,7 +429,6 @@ class happy:
             wit_count = len(witnesses)
         # pluralize Witness
         wit_plural = "es" if wit_count != 1 else ""
-        wit_text = f"{wit_count} Witness{wit_plural}"
 
         # challenge accepted
         if "challenger" in activity and activity["challenger"] == self.hotspot:
@@ -400,7 +480,7 @@ class happy:
                         # valid_text = "💩 Invalid"
                         valid_text = "Invalid"
                         parsed_poc["emoji"] = "💩"
-                        parsed_poc["invalid_reason"] = self.nice_invalid_reason(
+                        parsed_poc["invalid_reason"] = self._nice_invalid_reason(
                             w["invalid_reason"]
                         )
                 parsed_poc["subtype"] = f"{valid_text.lower()}_witness"
@@ -424,8 +504,8 @@ class happy:
         return parsed_poc
 
     ##############################
-    # init
     def __init__(self, hotspot, loadvars={}):
+        """init"""
 
         if not bool(hotspot):
             print("happy needs a hotspot address to get latest activities")
@@ -435,14 +515,15 @@ class happy:
         # loadvars is str and is ends with .json
         if isinstance(loadvars, str) and loadvars.find(".json") != -1:
             self.vars["json_file_input"] = loadvars
-            self.load_json_data()
+            self._load_json_data()
+
         elif (
             "json_file_input" in loadvars
             and loadvars["json_file_input"].find(".json") != -1
         ):
 
             self.json_file_input = loadvars["json_file_input"]
-            self.load_json_data()
+            self._load_json_data()
 
         # loadvars is dict has "data" and bool("data")
         if (
@@ -470,10 +551,17 @@ class happy:
         # load activities if no json file as loadvars as str or as loadvars.json_file_input
         if not bool(self.json_file_input):
             # get live data
-            self.load_activity_data()
+            self._load_activity_data()
 
         # loop activities
-        self.loop_activities()
+        self._loop_activities()
+
+        # if set in loadvars
+        # if load_wallet set in loadvars
+        self._load_hotspot_data()
+
+        # if set in loadvars
+        self._load_wallet_data()
 
         if "json_file_output" in self.vars and bool(self.vars["json_file_output"]):
-            self.write_json()
+            self._write_json()
