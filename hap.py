@@ -351,9 +351,9 @@ class happy:
                             "_" + parsed_activity["reward_type"].lower()
                         )
                         parsed_activity["amount"] = reward["amount"]
-                        parsed_activity["amount_nice"] = self.nice_hnt_amount_or_seconds(
-                            reward["amount"]
-                        )
+                        parsed_activity[
+                            "amount_nice"
+                        ] = self.nice_hnt_amount_or_seconds(reward["amount"])
 
                 # transferred packets
                 elif activity["type"] == "state_channel_close_v1":
@@ -404,7 +404,7 @@ class happy:
 
             # loop and find matches
             self_ness_filtered = []
-            for ness_index, ness_var in enumerate(self.ness):
+            for ness_index, _ in enumerate(self.ness):
                 if (
                     self.ness[ness_index]["type"] in filters
                     or self.ness[ness_index]["subtype"] in filters
@@ -434,6 +434,7 @@ class happy:
         # challenge accepted
         if "challenger" in activity and activity["challenger"] == self.hotspot:
             parsed_poc["name"] = "...Challenged Beaconer"
+            parsed_poc["emoji"] = "🏁"
             parsed_poc["subtype"] = "challenged_beaconer"
             parsed_poc["witnesses"] = len(witnesses)
             parsed_poc["witness_text"] = f"Witness{wit_plural}"
@@ -564,5 +565,12 @@ class happy:
         # if set in loadvars
         self._load_wallet_data()
 
+        # reverse sort if set in loadvars
+        if "reverse_sort" in self.vars and bool(self.vars["reverse_sort"]):
+            reverse_sort_ness = self.ness
+            reverse_sort_ness.reverse()
+            self.ness = self.response = reverse_sort_ness  # ness and alias response
+
+        # write to json file if set in loadvars
         if "json_file_output" in self.vars and bool(self.vars["json_file_output"]):
             self._write_json()
