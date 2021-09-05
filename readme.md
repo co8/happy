@@ -49,6 +49,8 @@ print(happy.ness)
   - Write Response to JSON file
   - Filter by Type and Subtype (rewards_v2, rewards_beacon)
   - Set Maximum
+  - Get Hotspot Data
+  - Get Wallet Data
 - Parsed and Formatted Data
   - Name of Activity Type
   - Reward Amounts and Types
@@ -183,7 +185,7 @@ optional_variables = {
     "filter": "rewards_v2", # in_dev # filter by types or subtypes
     "filter": ["rewards_beacon", "rewards_witness"], # 'filter' can be a string or a list
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # if provided, cursor will be used with API request.
-    "get_cursor_and_activities" : True, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for smaller response
+    "get_cursor_and_activities" : True, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for a shorter response
     "max": 25,  # maximum number of activities. API pagination max is ±100
     "get_hotspot": True, # returns hotspot info to happy.vars["hotspot"]
     "get_wallet": True, # returns wallet info to happy.vars["wallet"]

@@ -350,7 +350,8 @@ class happy:
                         parsed_activity["subtype"] += (
                             "_" + parsed_activity["reward_type"].lower()
                         )
-                        parsed_activity["amount"] = self.nice_hnt_amount_or_seconds(
+                        parsed_activity["amount"] = reward["amount"]
+                        parsed_activity["amount_nice"] = self.nice_hnt_amount_or_seconds(
                             reward["amount"]
                         )
 
