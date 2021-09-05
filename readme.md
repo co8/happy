@@ -182,7 +182,7 @@ optional_variables = {
     "data": data_list,  # 'data' variable from helium blockchain api response
     "json_file_input": "data.json",  # use a JSON file instead making a Blockchain API request
     "json_file_output": "output.json",  # if activities, output happy.ness response to a JSON file
-    "filter": "rewards_v2", # in_dev # filter by types or subtypes
+    "filter": "rewards_v2", # filter by types or subtypes
     "filter": ["rewards_beacon", "rewards_witness"], # 'filter' can be a string or a list
     "cursor": "eyJ0eG4iOiJ6aFh6TWJTQlBLVVpkWVIxRjlIT", # if provided, cursor will be used with API request.
     "get_cursor_and_activities" : True, # if True, API call will get a new cursor and then use it for an API Request. Use 'max' for a shorter response
