@@ -189,6 +189,7 @@ optional_variables = {
     "max": 25,  # maximum number of activities. API pagination max is ±100
     "get_hotspot": True, # returns hotspot info to happy.vars["hotspot"]
     "get_wallet": True, # returns wallet info to happy.vars["wallet"]
+    "reverse_sort": True,  # reverse sorts response to Ascending Time
     # "get_cursor_only": True, #in_dev # Fetch cursor. no activities
 }
 
