@@ -202,14 +202,119 @@ optional_variables = {
 optional_variables = {
     "json_file_output": "output.json",
     "get_cursor_and_activities": True,
-    "filter": ["rewards_beacon"]
-    "max": 25,
+    "filter": ["rewards_beacon"],
 }
 
-# No Activities in Response?
-# If your response does not have activities, try setting 'get_cursor' and 'max' to use API pagination to get recent activities
-
 happy = happy(hotspot_address, optional_variables)
+print(happy.ness)
+# 4 Rewards for Beaconing were found among last 100 activities
+#response
+[
+    {
+        "height": 1006532,
+        "hash": "3qv_FRfr2urEIZpcbu-tOs9NHzjSxXN3nMcRKaJ0uP8",
+        "time": 1631368495,
+        "time_nice": "09:54 11/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 5278819,
+        "amount_nice": "0.053"
+    },
+    {
+        "height": 1005865,
+        "hash": "Tpd-4OsWddaPHSuwXElaXGxxUgCxwoYHlayyvh6CpBo",
+        "time": 1631327204,
+        "time_nice": "22:26 10/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 6171442,
+        "amount_nice": "0.062"
+    },
+    {
+        "height": 1005362,
+        "hash": "n5Ver_vWCyWyQr6xgi2TT8p84vL75cf1BMdT3haK4QM",
+        "time": 1631296615,
+        "time_nice": "13:56 10/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 3270739,
+        "amount_nice": "0.033"
+    },
+    {
+        "height": 1003952,
+        "hash": "NFhVfIWa8LOuxjmDxFSX5ZYSkBgJlNdB9IxKzj25jFg",
+        "time": 1631211785,
+        "time_nice": "14:23 09/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 3200186,
+        "amount_nice": "0.032"
+    },
+    {
+        "height": 1002579,
+        "hash": "X4cicC-TWNA06VpWKMYLGgOAYWaMexHhM-LHi6TF5js",
+        "time": 1631127000,
+        "time_nice": "14:50 08/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 3978214,
+        "amount_nice": "0.040"
+    },
+    {
+        "height": 1002415,
+        "hash": "HkDCBEytl8f8oQNm1Fm4B7z_iTSRTNgWRXOJtqDcOpQ",
+        "time": 1631117213,
+        "time_nice": "12:06 08/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 1665006,
+        "amount_nice": "0.017"
+    },
+    {
+        "height": 1002147,
+        "hash": "F9FGSQpfkW8sur6bvOOAzUZiChHVR4b2S1uA-pLk-Tw",
+        "time": 1631101216,
+        "time_nice": "07:40 08/SEP",
+        "type": "rewards_v2",
+        "subtype": "rewards_beacon",
+        "name": "Rewards",
+        "emoji": "\ud83c\udf6a",
+        "hnt_emoji": "\ud83e\udd53",
+        "reward_type": "Beacon",
+        "amount": 2832925,
+        "amount_nice": "0.028"
+    }
+]
+
+# No Activities in Response?
+# If your response does not have activities, try setting 'get_cursor_and_activities' (optionally 'max') to use API pagination to get recent activities
+optional_variables = {
+    "get_cursor_and_activities": True
+}
 
 ```
 
