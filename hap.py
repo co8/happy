@@ -27,7 +27,7 @@ from datetime import datetime
 
 # main class
 class happy:
-    """HAPpy - Helium API Parser, Python"""
+    """co8/HAPpy - Helium API Parser, Python"""
 
     # attr
     hotspot = ""
